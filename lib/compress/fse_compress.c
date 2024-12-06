@@ -344,6 +344,16 @@ size_t FSE_writeNCount (void* buffer, size_t bufferSize,
 *  FSE Compression Code
 ****************************************************************/
 
+FSE_CTable* FSE_createCTable (unsigned maxSymbolValue, unsigned tableLog)
+{
+    size_t size;
+    if (tableLog > FSE_TABLELOG_ABSOLUTE_MAX) tableLog = FSE_TABLELOG_ABSOLUTE_MAX;
+    size = FSE_CTABLE_SIZE_U32 (tableLog, maxSymbolValue) * sizeof(U32);
+    return (FSE_CTable*)malloc(size);
+}
+
+void FSE_freeCTable (FSE_CTable* ct) { free(ct); }
+
 /* provides the minimum logSize to safely represent a distribution */
 static unsigned FSE_minTableLog(size_t srcSize, unsigned maxSymbolValue)
 {
