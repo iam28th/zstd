@@ -55,6 +55,18 @@
 #define FSE_FUNCTION_NAME(X,Y) FSE_CAT(X,Y)
 #define FSE_TYPE_NAME(X,Y) FSE_CAT(X,Y)
 
+FSE_DTable* FSE_createDTable (unsigned tableLog)
+{
+    if (tableLog > FSE_TABLELOG_ABSOLUTE_MAX) tableLog = FSE_TABLELOG_ABSOLUTE_MAX;
+    return (FSE_DTable*)malloc( FSE_DTABLE_SIZE_U32(tableLog) * sizeof (U32) );
+}
+
+void FSE_freeDTable (FSE_DTable* dt)
+{
+    free(dt);
+}
+
+
 static size_t FSE_buildDTable_internal(FSE_DTable* dt, const short* normalizedCounter, unsigned maxSymbolValue, unsigned tableLog, void* workSpace, size_t wkspSize)
 {
     void* const tdPtr = dt+1;   /* because *dt is unsigned, 32-bits aligned on 32-bits */
@@ -234,6 +246,21 @@ FORCE_INLINE_TEMPLATE size_t FSE_decompress_usingDTable_generic(
     assert(op >= ostart);
     return (size_t)(op-ostart);
 }
+
+
+size_t FSE_decompress_usingDTable(void* dst, size_t originalSize,
+                            const void* cSrc, size_t cSrcSize,
+                            const FSE_DTable* dt)
+{
+    const void* ptr = dt;
+    const FSE_DTableHeader* DTableH = (const FSE_DTableHeader*)ptr;
+    const U32 fastMode = DTableH->fastMode;
+
+    /* select fast mode (static) */
+    if (fastMode) return FSE_decompress_usingDTable_generic(dst, originalSize, cSrc, cSrcSize, dt, 1);
+    return FSE_decompress_usingDTable_generic(dst, originalSize, cSrc, cSrcSize, dt, 0);
+}
+
 
 typedef struct {
     short ncount[FSE_MAX_SYMBOL_VALUE + 1];

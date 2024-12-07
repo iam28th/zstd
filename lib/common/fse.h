@@ -200,6 +200,15 @@ FSE_PUBLIC_API size_t FSE_readNCount_bmi2(short* normalizedCounter,
                            const void* rBuffer, size_t rBuffSize, int bmi2);
 
 typedef unsigned FSE_DTable;   /* don't allocate that. It's just a way to be more restrictive than void* */
+FSE_PUBLIC_API FSE_DTable* FSE_createDTable(unsigned tableLog);
+FSE_PUBLIC_API void        FSE_freeDTable(FSE_DTable* dt);
+
+/*! FSE_decompress_usingDTable():
+    Decompress compressed source `cSrc` of size `cSrcSize` using `dt`
+    into `dst` which must be already allocated.
+    @return : size of regenerated data (necessarily <= `dstCapacity`),
+              or an errorCode, which can be tested using FSE_isError() */
+FSE_PUBLIC_API size_t FSE_decompress_usingDTable(void* dst, size_t dstCapacity, const void* cSrc, size_t cSrcSize, const FSE_DTable* dt);
 
 /*!
 Tutorial :
